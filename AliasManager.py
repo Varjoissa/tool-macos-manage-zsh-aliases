@@ -106,7 +106,7 @@ class AliasManager:
             search_for = f"alias {key}="
         else:
             search_for = "alias "
-            
+
         displayline = ""
         for line in lines:
             if line.find(search_for) >= 0:
@@ -115,3 +115,8 @@ class AliasManager:
 
         if not displayline:
             print(f"Key '{key}' not found.")
+
+
+alias_manager = AliasManager()
+
+alias_manager.remove("t")
