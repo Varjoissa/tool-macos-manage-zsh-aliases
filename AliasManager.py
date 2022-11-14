@@ -16,6 +16,10 @@ class AliasManager:
         returns None
         """
         self.filedata = self.__load_file(filepath)
+
+        if not self.filedata:
+            exit("Alias file could not be loaded.")
+
         self.__create_backup()     
 
     def __load_file(self, filepath: str) -> str:
@@ -26,14 +30,13 @@ class AliasManager:
 
         returns str: File data from the loaded file
         """
-        try:
-            self.filepath = filepath
-            with open(filepath, "r") as file:
-                return file.read()
-        except FileNotFoundError:
-            self.filepath = f"{os.environ.get('USER_ZDOTDIR')}/.zshrc"
-            with open(self.filepath, "r") as file:
-                return file.read()
+        paths = [filepath, f"{os.environ.get('HOME')}/.zshrc", f"{os.environ.get('USER_ZDOTDIR')}/.zshrc"]
+
+        for path in paths:
+            if os.path.exists(path):
+                self.filepath = path
+                with open(self.filepath, "r") as file:
+                    return file.read()
             
     def __save_file(self, suffix: str = "") -> None:
         """
