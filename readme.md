@@ -26,9 +26,11 @@ After adding an alias, make sure to update the zsh environment by using the comm
 In order to make quick use of this alias manager, add the following aliasses:
 
 **am** - Alias Manager
+
 `python AM_CLI.py add am python AM_CLI.py`
 --> am="python AM_CLI.py" - make sure to use the right pathing to the CLI script.
 
 **amr** - Refresh Zsh
+
 `python AM_CLI.py add amr source ~/.zshrc`
 --> amr="source ~/.zshrc"
