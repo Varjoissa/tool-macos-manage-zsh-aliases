@@ -155,8 +155,3 @@ class AliasManager:
             for line in lines:
                 if line.find("alias ") >= 0:
                     print(line)
-
-
-alias_manager = AliasManager()
-
-alias_manager.remove("t")
