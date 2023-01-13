@@ -2,7 +2,7 @@
 AliasManager manages all system aliases in MacOs.
 """
 
-import os
+import os, sys
 
 class AliasManager:
 
@@ -18,7 +18,7 @@ class AliasManager:
         self.filedata = self.__load_file(filepath)
 
         if not self.filedata:
-            exit("Alias file could not be loaded.")
+            sys.exit("Alias file could not be loaded.")
 
         self.__create_backup()     
 
@@ -30,7 +30,10 @@ class AliasManager:
 
         returns str: File data from the loaded file
         """
-        paths = [filepath, f"{os.environ.get('HOME')}/.zshrc", f"{os.environ.get('USER_ZDOTDIR')}/.zshrc"]
+        try:
+            paths = [filepath, f"{os.environ['HOME']}/.zshrc", f"{os.environ['USER_ZDOTDIR']}/.zshrc"]
+        except KeyError:
+            sys.exit("Couldn't load environmental variables.")
 
         for path in paths:
             if os.path.exists(path):
@@ -60,8 +63,24 @@ class AliasManager:
         """
         self.__save_file(".prev")
 
-    # PUBLIC METHODS
+    def __edit_file(self, new_line: str, line_nr = None) -> None:
+        """
+        Edit a line in the filedata
 
+        param line: Line to be edited
+        param line_nr: Line number to be edited
+
+        returns None
+        """
+        lines = self.filedata.split("\n")
+        if line_nr and line_nr < len(lines):
+            lines[line_nr] = new_line
+        else:
+            lines.append(new_line)
+        self.filedata = "\n".join(lines)
+
+
+    # PUBLIC METHODS
     def add(self, key: str, value: str) -> None:
         """
         Add an alias to the system aliases
@@ -71,9 +90,15 @@ class AliasManager:
 
         returns None
         """
-        newline = key+'="' + value + '"'
-        self.filedata = f"{self.filedata}\nalias {newline}"
-        print(f"Adding line  : '{newline}'")
+        newline = f"alias {key}='{value}'"
+        
+        if line_number := self.__find_key(key):
+            self.__edit_file(newline, line_number)
+            print(f"Updating line: '{newline}'")
+        else:
+            self.__edit_file(newline)
+            print(f"Adding line: '{newline}'")
+            
         self.__save_file()
 
     def remove(self, key: str) -> None:
@@ -95,7 +120,23 @@ class AliasManager:
 
         self.filedata = newdata
         self.__save_file()
+    
+    def __find_key(self, key: str) -> str:
+        """
+        Find an alias from the system aliases
         
+        param key: Key of the alias
+
+        returns str: The line of the alias
+        """
+        lines = self.filedata.split("\n")
+        line_number = 0
+        search_for = f"alias {key}="
+        for line in lines:
+            if line.find(search_for) >= 0:
+                return line_number
+            line_number += 1
+
     def show(self, key: str = "") -> None:
         """
         Show an alias of the system aliases
@@ -106,18 +147,14 @@ class AliasManager:
         """
         lines = self.filedata.split("\n")
         if key:
-            search_for = f"alias {key}="
+            if line_number := self.__find_key(key):
+                print(f"Displaying line: '{lines[line_number]}'")
+            else:
+                print(f"Key '{key}' not found.")
         else:
-            search_for = "alias "
-
-        displayline = ""
-        for line in lines:
-            if line.find(search_for) >= 0:
-                displayline = line.replace("alias ", "")
-                print(f"Found: '{displayline}'")
-
-        if not displayline:
-            print(f"Key '{key}' not found.")
+            for line in lines:
+                if line.find("alias ") >= 0:
+                    print(line)
 
 
 alias_manager = AliasManager()
